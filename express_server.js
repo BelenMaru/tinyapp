@@ -7,6 +7,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
 
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
 function generateRandomString() {
   let randomString = '';
   const characterList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -17,10 +22,6 @@ function generateRandomString() {
 
 }
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
 
 app.get("/urls/new", (req, res) => {   // Get rout to show form
   res.render("urls_new");
@@ -44,12 +45,24 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+app.get("/urls/:id", (req, res) => {
+ const longURL = urlDatabase[req.params.id];
+  const templateVars = { shortURL: req.params.id, longURL: longURL};
+  res.render("urls_show", templateVars);
+});
+
+
 app.post("/urls/:shortURL/delete"), (req,res) => {
   const shortURL = req.params.shortURL;
   delete  urlDatabase[shortURL];
   res.rediredct('urls');
 }
 
+app.post("/urls/:id", (req, res) => {
+ 
+  console.log(req.params, "edit");
+  res.redirect("/urls");
+});
 
 
 app.post("/urls", (req, res) => {
