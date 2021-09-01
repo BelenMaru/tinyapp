@@ -23,6 +23,12 @@ function generateRandomString() {
 }
 
 
+// GET rout for register
+app.get("/register", (req,res) =>{
+  res.render("register");
+});
+
+
 app.get("/urls/new", (req, res) => {   // Get rout to show form
   res.render("urls_new");
 });
