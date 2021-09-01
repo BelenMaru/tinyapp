@@ -21,6 +21,21 @@ function generateRandomString() {
   return randomString;
 
 }
+// Registration objects
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+// Register global object
 
 
 // GET rout for register
@@ -55,6 +70,24 @@ app.get("/urls/:id", (req, res) => {
  const longURL = urlDatabase[req.params.id];
   const templateVars = { shortURL: req.params.id, longURL: longURL, username: req.cookies.username};
   res.render("urls_show", templateVars);
+});
+
+// register url
+app.post("/register", (req,res) => {
+  const userID = generateRandomString();
+  const emailSubmitted = req.body.email;
+  const passSubmitted = req.body.email;
+  const useObj = {
+    id: userID,
+    email: emailSubmitted,
+    password: passSubmitted,
+  }
+users[userID] = useObj;
+ res.cookie("user_id", userID);
+ console.log(users);
+ res.redirect("urls");
+
+
 });
 
 // logout url
