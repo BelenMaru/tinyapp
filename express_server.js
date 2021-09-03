@@ -35,26 +35,62 @@ const users = {
   }
 }
 
-// Register global object
+//find a user object containing a matching email
+const findUserByEmail = (email, users) => {
+  // return Object.keys(usersDb).find(key => usersDb[key].email === email)
+  for (let userId in users) {
+    if (users[userId].email === email) {
+      return users[userId]; // return the user object
+    }
+  }
+  return false;
+};
 
+//Authenticate User
+const authenticateUser = (email, password, users) => {
+  // contained the user info if found or false if not
+  const userFound = findUserByEmail(email, users);
 
-// GET rout for register
-app.get("/register", (req,res) =>{
-  res.render("register");
+  if (userFound && userFound.password === password) {
+    return userFound;
+  }
+  return false;
+}
+
+//Log in a user
+app.get("/login", (req, res) => {
+  const templateVars = {
+    users: req.cookies["userID"],
+    user: null
+
+    // email: req.cookies["user_id"],
+  };
+  res.render("urls_login", templateVars);
 });
 
-
-app.get("/urls/new", (req, res) => {   // Get rout to show form
-  res.render("urls_new");
+//Register New User
+app.get("/register", (req, res) => {
+  const templateVars = {
+    user:null
+   
+    // email: req.cookies["user_id"],
+  };
+  res.render("register", templateVars);
 });
 
-app.get("/urls/:shortURL", (req, res) => {     // Add the second route and template
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username};
-  res.render("urls_show", templateVars);
+app.get("/urls/new", (req, res) => { 
+  const userId = req.cookies.user_id
+  const user =  users[userId]
+  const templateVars = { urls: urlDatabase, user:user};  // Get rout to show form
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies.username };
+  const userId = req.cookies.user_id
+  const user =  users[userId]
+  const templateVars = { urls: urlDatabase, user:user};
+  console.log(user)
+
   res.render("urls_index", templateVars);
 });
 
@@ -67,42 +103,70 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const userId = req.cookies.user_id
+  const user =  users[userId]
  const longURL = urlDatabase[req.params.id];
-  const templateVars = { shortURL: req.params.id, longURL: longURL, username: req.cookies.username};
+  // const templateVars = { shortURL: req.params.id, longURL: longURL, username: req.cookies.username};
+
+  const templateVars = { shortURL: req.params.id, longURL: longURL, user:user};
+
   res.render("urls_show", templateVars);
 });
 
-// register url
-app.post("/register", (req,res) => {
-  const userID = generateRandomString();
-  const emailSubmitted = req.body.email;
-  const passSubmitted = req.body.email;
-  const useObj = {
-    id: userID,
-    email: emailSubmitted,
-    password: passSubmitted,
+// Handle the login form
+app.post("/login", (req,res)=> {
+  const { email, password } = req.body;
+  const user = authenticateUser(email, password, users);
+  if (user) {
+    // log the user in
+    res.cookie("user_id", user.id);
+    res.redirect("/urls");
+  } else {
+    res.status(403);
+    res.send("Please try again, invalide Credentials!.");
   }
-users[userID] = useObj;
- res.cookie("user_id", userID);
- console.log(users);
- res.redirect("urls");
-
-
 });
 
-// logout url
-app.post("/logout",(req,res) => {
-  const username = req.cookies["username"];
-  console.log("username:" , username)
-  res.clearCookie("username",username);
-  res.redirect("/urls")
+// logout a user
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
 });
 
-// Login url
-app.post("/login", (req,res) => {
-  const input = req.body["username"];
-  res.cookie("username", input);
-  res.redirect("urls");
+//handle register form
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  //check if a user exists
+
+  const userFound = findUserByEmail(email, users);
+  if (userFound) {
+    res.status(403);
+    return res.send("You already have the email!");
+  }
+  if (!email) {
+    res.status(403);
+    return res.send("Please enter a valid email address");
+  }
+  if (!password) {
+    res.status(403);
+    return res.send("Please enter a password");
+  }
+  //generate a new User ID
+  const newUserId = generateRandomString();
+
+  const newUser = {
+    id: newUserId,
+    email,
+    password,
+  };
+
+  users[newUserId] = newUser;
+
+  //set the cookie to remeber the user
+  res.cookie("user_id", newUserId);
+  res.redirect("/urls");
 });
 
 // Delete url
@@ -113,11 +177,9 @@ app.post("/urls/:shortURL/delete"), (req,res) => {
 }
 
 app.post("/urls/:id", (req, res) => {
- 
-  console.log(req.params, "edit");
+console.log(req.params, "edit");
   res.redirect("/urls");
 });
-
 
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString()
