@@ -124,10 +124,6 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
 
 // Handle the login form
 app.post("/login", (req,res)=> {
@@ -147,7 +143,6 @@ app.post("/logout", (req, res) => {
   req.session= null;
   res.redirect("/login");
 });
-
 
 //handle register form
 app.post("/register", (req, res) => {
@@ -191,7 +186,6 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = { longURL, shortURL, userID: userId };
   res.redirect("/urls");
 });
-
 
 // shortURL
 app.post("/urls/:shortURL", (req, res) => {
