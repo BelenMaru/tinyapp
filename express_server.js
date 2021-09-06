@@ -206,13 +206,14 @@ app.post("/urls/:shortURL", (req, res) => {
     res.status(403);
     res.send("Please try logging back again! incorrect credentials.");
   }
-  if (urlDatabase[shortURL].userID !== user.id) {
+  if (urlDatabase[shortURL].userId!== user.id) {
+    console.log("userId")
     res.status(403);
     res.send("Please log in again!Not your URL");
     return;  
   }
   const updatedLongURL = req.body.longURL;
-  urlDatabase[shortURL].longURL = longURL;
+  urlDatabase[shortURL].longURL = updatedlongURL;
   res.redirect("/urls");
 });
 
