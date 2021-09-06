@@ -59,11 +59,6 @@ const users = {
 };
 
 
-
-// app.get("/", (req,res) =>{
-//   res.render("index")
-
-
 //Login a user
 app.get("/login", (req, res) => {
   const templateVars = { user: req.session["user_id"] };
