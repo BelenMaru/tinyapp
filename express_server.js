@@ -5,27 +5,32 @@ const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 const bcrypt = require('bcrypt');
+const {
+  findUserByEmail,
+  generateRandomString,
+  authenticateUser,
+  urlsForUser,
+} = require("./helpers.js");
 
 
 app.set("view engine", "ejs");
-// app.use(cookieParser())
 const urlDatabase_old = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca " , userID: "aJ48lW"}, 
   "9sm5xK": {longURL: "http://www.google.com" , userID: "aJ48lW"} 
   
 };
 
-// const urlDatabase = {
-//   c7UTzA: {
-//     longURL: "https://www.google.ca",
-//     userID: "aJ48lW"
-//   },
-//   B4NMsP: {
-//     longURL: "https://www.lighthouselabs.com",
-//     userID: "aJ48lW"
-//   }
+const urlDatabase = {
+  LLzxCr: {
+    longURL: "https://www.LHL.ca",
+    userID: "aJ48lW"
+  },
+  OJ7RrU: {
+    longURL: "https://www.lighthouselabs.ca",
+    userID: "aJ48lW"
+  }
 
-// };
+};
 
 
 app.use(cookieSession({
@@ -48,20 +53,12 @@ const users = {
   "123":{
     id: "123",
     email: "test@test.com",
-    password: "1234"
+    password: bcrypt.hashSync("1234",10),
 
-  }
-}
+  },
+};
 
-function generateRandomString() {
-  let randomString = '';
-  const characterList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let x = 0; x < 6; x += 1) {
-    randomString += characterList.charAt(Math.floor(Math.random() * characterList.length));
-  }
-  return randomString;
 
-}
 
 // app.get("/", (req,res) =>{
 //   res.render("index")
@@ -95,7 +92,7 @@ app.get("/urls/new", (req, res) => {
 
 // Found urls
 app.get("/urls", (req, res) => {
-   const userid = req.session["user_id"];
+   const userId = req.session["user_id"];
    if (userId) {
     const user = users[userId];
     const urls = urlsForUser(userId, urlDatabase);
@@ -117,7 +114,7 @@ app.get("/u/:shortURL", (req, res) => {
     return res.send("Please try again!URL unknown!");
   }
   longURL = urlDatabase[shortURL].longURL;
-  re.redirect(longURL);
+  res.redirect(longURL);
 });
 
 // GET shortURL
@@ -159,9 +156,9 @@ app.post("/logout", (req, res) => {
 
 //handle register form
 app.post("/register", (req, res) => {
-  const userFound = findUserByEmail(email, users);
   const email = req.body.email;
   const password = req.body.password;
+  const userFound = findUserByEmail(email, users);
   const hashPassword = bcrypt.hashSync(password,10);
  
   //check if a user exists
@@ -190,7 +187,7 @@ app.post("/register", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.session["user_id"];
   if (!users[userId]) {
-    res.send("Please Login");
+    res.send("Please try to Login");
     res.redirect("/login");
   }
 

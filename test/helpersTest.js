@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const { getUserByEmail, generateRandomString  } = require('../helpers.js');
+const { findUserByEmail} = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -15,22 +15,16 @@ const testUsers = {
   }
 };
 
-describe('getUserByEmail', function() {
+describe('findUserByEmail', function() {
 it('should return a user with valid email', function() {
-    const user = getUserByEmail("user@example.com", testUsers)
+    const user = findUserByEmail("user@example.com", testUsers)
     const expectedOutput = "userRandomID";
-    assert.equal(user, expectedOutput);
+    assert.equal(user.id, expectedOutput);
   });
 
-  it('should return undefined with no email argument', function() {
-    const user = getUserByEmail("", testUsers);
-     const expectedOutput = undefined;
-     assert.equal(user, expectedOutput);
-   });
-
    it('should return undefined when email does not exist', function() {
-    const user = getUserByEmail("mabel@example.com", testUsers);
-     const expectedOutput = undefined;
+    const user = findUserByEmail("mabel@example.com", testUsers);
+     const expectedOutput = false;
      assert.equal(user, expectedOutput);
    });
 }); 
