@@ -32,7 +32,6 @@ const urlDatabase = {
 
 };
 
-
 app.use(cookieSession({
   name: 'session',
   keys: ['MABEL','DALYA'],
@@ -116,6 +115,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session["user_id"];
   const urls = urlsForUser(userId, urlDatabase);
+  console.log(userId,"urls",urls)
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urls[req.params.shortURL].longURL,
@@ -190,19 +190,26 @@ app.post("/urls", (req, res) => {
 // shortURL
 app.post("/urls/:shortURL", (req, res) => {
   const user = users[req.session["user_id"]];
+  console.log(user);
   const shortURL = req.params.shortURL;
   if(!user) {
     res.status(403);
     res.send("Please try logging back again! incorrect credentials.");
   }
-  if (urlDatabase[shortURL].userId!== user.id) {
-    console.log("userId")
+  console.log("user");
+  console.log(urlDatabase[shortURL]);
+  if (urlDatabase[shortURL].userID!== user.id) {
+    
+    console.log("userId", user);
     res.status(403);
     res.send("Please log in again!Not your URL");
     return;  
   }
-  const updatedLongURL = req.body.longURL;
-  urlDatabase[shortURL].longURL = updatedlongURL;
+  const updatedLongURL = req.body.updateUrl;
+  console.log("updatedLongURL ");
+  console.log(req.body)
+  urlDatabase[shortURL].longURL = updatedLongURL;
+  console.log(urlDatabase[shortURL])
   res.redirect("/urls");
 });
 
