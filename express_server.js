@@ -14,20 +14,16 @@ const {
 
 
 app.set("view engine", "ejs");
-const urlDatabase_old = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca " , userID: "aJ48lW"}, 
-  "9sm5xK": {longURL: "http://www.google.com" , userID: "aJ48lW"} 
-  
-};
+
 
 const urlDatabase = {
   LLzxCr: {
     longURL: "https://www.LHL.ca",
-    userID: "aJ48lW"
+    userID: "123"
   },
   OJ7RrU: {
     longURL: "https://www.lighthouselabs.ca",
-    userID: "aJ48lW"
+    userID: "123"
   }
 
 };
@@ -87,13 +83,20 @@ app.get("/urls/new", (req, res) => {
 // Found urls
 app.get("/urls", (req, res) => {
    const userId = req.session["user_id"];
-   if (userId) {
+   if (!userId) {
+     return res.redirect("/login");
+   }
+
     const user = users[userId];
     const urls = urlsForUser(userId, urlDatabase);
     const templateVars = { urls, user };
     return res.render("urls_index", templateVars);
-  }
-  res.redirect("/login");
+  
+ 
+});
+
+app.get("/", (req,res) => {
+  return res.redirect("/urls/new");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -114,11 +117,20 @@ app.get("/u/:shortURL", (req, res) => {
 // GET shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session["user_id"];
-  const urls = urlsForUser(userId, urlDatabase);
-  console.log(userId,"urls",urls)
+  if(!userId) {
+    return res.send("You are not loggedIn");
+  }
+  console.log(userId);
+  const shortURL = req.params.shortURL;
+  const url = urlDatabase[shortURL]
+  if(url.userID !== userId) {
+    return res.send("This is not your URL");
+  }
+
+const longURL = urlDatabase[shortURL];
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urls[req.params.shortURL].longURL,
+    shortURL,
+    longURL,
     user: users[userId],
   };
   res.render("urls_show", templateVars);
@@ -131,7 +143,7 @@ app.post("/login", (req,res)=> {
   const authenticatedUser = authenticateUser(email, password, users);
   if (!authenticatedUser) {
     res.status(403);
-    res.send("Please have a valid credentials!");
+    return res.send("Please have a valid credentials!");
     }
   req.session["user_id"] = authenticatedUser.id;
   res.redirect("/urls");
@@ -213,13 +225,29 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-// Delete url
+// Delete URL
 app.post("/urls/:shortURL/delete", (req,res) => {
-delete urlDatabase[req.params.shortURL];
-res.redirect("/urls");
+  const deleteURL = req.params.shortURL;
+  const userId = req.session["user_id"];
+  const user = users[userId]; 
+  
+  if(!user) {
+    return res.send("You don't have permission to delete this URL");
+  }
+  console.log(user);
+
+  const shortURL = req.params.shortURL;
+  console.log(shortURL);
+  console.log(urlDatabase[req.params.shortURL].userID);
+
+  const userIdData = urlDatabase[req.params.shortURL].userID;
+  if(userId === userIdData){
+  delete urlDatabase[req.params.shortURL];
+  }
+  return res.redirect("/urls")
 });
 
- // upddate URL
+ // Update URL
 app.post("/urls/:shortURL/update", (req, res) => {
 const userId = req.session["user_id"];
 const shortURL = req.params.shortURL;
